@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSG.COM 특가 분석 대시보드</title>
+    <style>
+:root {
+    --bg-color: #0b0f19;
+    --sidebar-color: #111827;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.08);
+    --primary-color: #ffb800;
+    --secondary-color: #ff4d00;
+    --text-main: #ffffff;
+    --text-muted: #94a3b8;
+    --success: #10b981;
+    --error: #ef4444;
+    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg-color);
+    color: var(--text-main);
+    font-family: 'Outfit', 'Noto Sans KR', sans-serif;
+    overflow-x: hidden;
+}
+
+.dashboard-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background: var(--sidebar-color);
+    border-right: 1px solid var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 1.5rem;
+    position: fixed;
+    height: 100vh;
+}
+
+.logo {
+    margin-bottom: 3rem;
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.ssg-text { color: var(--primary-color); }
+.dot-com { color: var(--text-main); }
+.logo-sub {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.nav-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.nav-item i { width: 20px; height: 20px; }
+
+.nav-item:hover, .nav-item.active {
+    background: var(--glass-bg);
+    color: var(--primary-color);
+    box-shadow: inset 0 0 0 1px var(--glass-border);
+}
+
+/* Content Area */
+.content {
+    flex: 1;
+    margin-left: 250px;
+    padding: 2rem 3rem;
+}
+
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+h1 { font-size: 1.8rem; margin-bottom: 0.3rem; }
+.subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.date-display { font-weight: 600; color: var(--text-muted); }
+.v-line { width: 1px; height: 20px; background: var(--glass-border); }
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    border: 2px solid var(--glass-border);
+}
+
+/* Glassmorphism Cards */
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.stat-card {
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--primary-color);
+}
+
+.stat-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-icon.income { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.stat-icon.users { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
+.stat-icon.conversion { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.stat-icon.brand { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+
+.label { font-size: 0.85rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; }
+h2 { font-size: 1.5rem; font-weight: 700; }
+.trend { font-size: 0.75rem; margin-top: 0.2rem; display: block; }
+.trend.up { color: var(--success); }
+.trend.down { color: var(--error); }
+
+/* Charts */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.charts-grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.chart-container {
+    padding: 2rem;
+}
+
+.chart-header {
+    margin-bottom: 1.5rem;
+}
+
+.chart-header h3 { font-size: 1.1rem; margin-bottom: 0.2rem; }
+.chart-header p { font-size: 0.85rem; color: var(--text-muted); }
+
+.chart-wrapper {
+    height: 300px;
+    position: relative;
+    width: 100%;
+}
+
+/* Animations */
+.animate-up {
+    animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 1200px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="ssg-text">SSG</span><span class="dot-com">.COM</span>
+                <span class="logo-sub">Special Price Insights</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active"><i data-lucide="layout-dashboard"></i> Overview</a>
+                <a href="#" class="nav-item"><i data-lucide="tag"></i> Promotions</a>
+                <a href="#" class="nav-item"><i data-lucide="store"></i> Stores</a>
+                <a href="#" class="nav-item"><i data-lucide="bar-chart-3"></i> Reports</a>
+                <a href="#" class="nav-item"><i data-lucide="settings"></i> Settings</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header class="top-bar">
+                <div class="header-info">
+                    <h1>실시간 특가 분석 대시보드</h1>
+                    <p class="subtitle">SSG.COM의 실시간 특가 데이터를 분석한 비즈니스 지표입니다.</p>
+                </div>
+                <div class="user-profile">
+                    <div class="date-display" id="currentDate">2026.04.20</div>
+                    <div class="v-line"></div>
+                    <div class="avatar">AD</div>
+                </div>
+            </header>
+
+            <!-- Status Cards -->
+            <section class="stats-grid">
+                <div class="stat-card glass animate-up">
+                    <div class="stat-icon income"><i data-lucide="shopping-bag"></i></div>
+                    <div class="stat-info">
+                        <span class="label">총 상품 수</span>
+                        <h2 id="totalItems">0</h2>
+                        <span class="trend up">+12.5% vs last week</span>
+                    </div>
+                </div>
+                <div class="stat-card glass animate-up" style="animation-delay: 0.1s;">
+                    <div class="stat-icon users"><i data-lucide="credit-card"></i></div>
+                    <div class="stat-info">
+                        <span class="label">평균 판매가</span>
+                        <h2 id="avgPrice">₩0</h2>
+                        <span class="trend down">-3.2% vs yesterday</span>
+                    </div>
+                </div>
+                <div class="stat-card glass animate-up" style="animation-delay: 0.2s;">
+                    <div class="stat-icon conversion"><i data-lucide="percent"></i></div>
+                    <div class="stat-info">
+                        <span class="label">평균 할인율</span>
+                        <h2 id="avgDiscount">0%</h2>
+                        <span class="trend up">+2.1% market average</span>
+                    </div>
+                </div>
+                <div class="stat-card glass animate-up" style="animation-delay: 0.3s;">
+                    <div class="stat-icon brand"><i data-lucide="award"></i></div>
+                    <div class="stat-info">
+                        <span class="label">Top 브랜드</span>
+                        <h2 id="topBrand">-</h2>
+                        <span class="trend">Leading performance</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Charts Section -->
+            <section class="charts-grid">
+                <div class="chart-container glass animate-up" style="animation-delay: 0.4s;">
+                    <div class="chart-header">
+                        <h3>가격대별 상품 분포</h3>
+                        <p>특가 상품의 주요 가격대 레이어 분석</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="priceDistChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-container glass animate-up" style="animation-delay: 0.5s;">
+                    <div class="chart-header">
+                        <h3>판매처별 비중</h3>
+                        <p>SSG 내부 및 외부 판매처 입정 현황</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="storeShareChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="charts-grid-3">
+                <div class="chart-container glass animate-up" style="animation-delay: 0.6s;">
+                    <div class="chart-header">
+                        <h3>프로모션 캠페인 현황</h3>
+                        <p>행사 유형별 비중 분석</p>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="promoChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+// SSG.COM Dashboard Application
+document.addEventListener('DOMContentLoaded', async () => {
+    let data = {
+    "total_items": 386,
+    "avg_price": 128500,
+    "avg_discount": 19.9,
+    "top_brand": "삼성",
+    "price_bins": [
+        "0-34만",
+        "34-69만",
+        "69-104만",
+        "104-138만",
+        "138-173만",
+        "173-208만",
+        "208-242만",
+        "242-277만",
+        "277-312만",
+        "312-346만"
+    ],
+    "price_counts": [
+        356,
+        17,
+        3,
+        1,
+        5,
+        1,
+        1,
+        1,
+        0,
+        1
+    ],
+    "store_labels": [
+        "S.COM몰",
+        "본점",
+        "월계점",
+        "emart NE.O.004",
+        "강남점",
+        "대구신세계",
+        "센텀시티점",
+        "대전신세계",
+        "의정부점",
+        "신세계 사우스시티"
+    ],
+    "store_values": [
+        217,
+        83,
+        42,
+        21,
+        8,
+        4,
+        3,
+        3,
+        1,
+        1
+    ],
+    "promo_labels": [
+        "쓱특가",
+        "오반장",
+        "뷰티 쓱세일"
+    ],
+    "promo_values": [
+        257,
+        84,
+        45
+    ]
+};;
+    }
+
+
+    // Update Stats
+    document.getElementById('totalItems').innerText = data.total_items.toLocaleString();
+    document.getElementById('avgPrice').innerText = '₩' + data.avg_price.toLocaleString();
+    document.getElementById('avgDiscount').innerText = data.avg_discount + '%';
+    document.getElementById('topBrand').innerText = data.top_brand;
+
+    // Chart.js Global Configuration
+    Chart.defaults.color = 'rgb(148, 163, 184)';
+    Chart.defaults.font.family = "'Outfit', sans-serif";
+
+    // 1. Price Distribution Chart (Bar)
+    const priceCtx = document.getElementById('priceDistChart').getContext('2d');
+    new Chart(priceCtx, {
+        type: 'bar',
+        data: {
+            labels: data.price_bins,
+            datasets: [{
+                label: '상품 수',
+                data: data.price_counts,
+                backgroundColor: 'rgba(255, 184, 0, 0.6)',
+                borderColor: '#ffb800',
+                borderWidth: 1,
+                borderRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+
+    // 2. Store Share Chart (Doughnut)
+    const storeCtx = document.getElementById('storeShareChart').getContext('2d');
+    new Chart(storeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: data.store_labels.slice(0, 5), // Top 5
+            datasets: [{
+                data: data.store_values.slice(0, 5),
+                backgroundColor: [
+                    '#ffb800', '#ff4d00', '#3b82f6', '#a855f7', '#10b981'
+                ],
+                borderWidth: 0,
+                hoverOffset: 12
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+            },
+            cutout: '70%'
+        }
+    });
+
+    // 3. Promotion Chart (Line)
+    const promoCtx = document.getElementById('promoChart').getContext('2d');
+    new Chart(promoCtx, {
+        type: 'line',
+        data: {
+            labels: data.promo_labels,
+            datasets: [{
+                label: '진행 건수',
+                data: data.promo_values,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointBackgroundColor: '#10b981'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' } },
+                x: { grid: { display: false } }
+            },
+            plugins: { legend: { display: false } }
+        }
+    });
+});
+
+</script>
+    <script>
+        lucide.createIcons();
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('ko-KR', {
+            year: 'numeric', month: '2-digit', day: '2-digit'
+        });
+    </script>
+</body>
+</html>
